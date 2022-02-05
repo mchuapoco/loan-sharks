@@ -1,3 +1,4 @@
+name: cs-155-miniprojects
 channels:
   - bokeh
   - conda-forge
