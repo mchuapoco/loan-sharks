@@ -4,6 +4,9 @@
 # Data
 **/data
 
+# Excel temp files (appear when an Excel file is open)
+~*.xlsx
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
