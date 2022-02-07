@@ -1,9 +1,6 @@
 # Macbook hidden file
 .DS_Store
 
-# Data
-**/data
-
 # Excel temp files (appear when an Excel file is open)
 ~*.xlsx
 
