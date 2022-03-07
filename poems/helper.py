@@ -101,6 +101,7 @@ def getAllWordsAndSequences(shakespeare_filename, syllable_dict_filename):
 ###############################################################################
 # HMM model
 ###############################################################################
+import numpy as np 
 
 class HiddenMarkovModel:
     '''
