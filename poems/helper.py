@@ -3,7 +3,7 @@
 # Preprocessing
 ###############################################################################
 
-def getAllWordsAndSequences(shakespeare_filename, syllable_dict_filename): 
+def getAllWordsAndSequences(shakespeare_filename, syllable_dict_filename, syllable_count=False): 
     import re 
     
     # Load in syllable dictionary and save outputs into a dictionary
@@ -95,13 +95,76 @@ def getAllWordsAndSequences(shakespeare_filename, syllable_dict_filename):
         for word in sonnet:
             current_sonnet.append(word_dict[word])
         all_sonnet_int.append(current_sonnet)
+    
+    if syllable_count:
+        return all_words, all_sequences, word_dict, all_sonnet_int, syllable_dict
         
     return all_words, all_sequences, word_dict, all_sonnet_int
+
+def sample_rev_sonents(hmm, obs_map, syllable_dict, n_sonnet=10, start_word=None):
+    # Get reverse map.
+    obs_map_r = obs_map_reverser(obs_map)
+    start_state = None
+    if start_word:
+        emition_pos=[hmm.O[i][start_word] for i in range(hmm.L)]
+        start_state=random.choices([i for i in range(hmm.L)],weights=emition_pos)[0]
+    # Sample and convert sentence.
+    emission = []
+    states = []
+    count_sonet = int(syllable_dict[obs_map_r[start_word]][-1])
+    state=start_state
+#     print(obs_map_r[start_word])
+
+    for i in range(100):
+            # Append state.
+            states.append(state)
+            while(True):
+
+                # Sample next observation.
+                rand_var = random.uniform(0, 1)
+                next_obs = 0
+
+                while rand_var > 0:
+                    rand_var -= hmm.O[state][next_obs]
+                    next_obs += 1
+
+                next_obs -= 1
+                emission.append(next_obs)
+                if i!=0:
+                    count_sonet+=int(syllable_dict[obs_map_r[next_obs]][-1])
+                if count_sonet==10:
+                    break
+                elif count_sonet>10:
+                    count_sonet-=int(syllable_dict[obs_map_r[next_obs]][-1])
+                    emission.pop()
+                    continue
+                else:
+                    break
+            if count_sonet==10:
+                break
+
+            # Sample next state.
+            rand_var = random.uniform(0, 1)
+            next_state = 0
+
+            while rand_var > 0:
+                rand_var -= hmm.A[state][next_state]
+                next_state += 1
+
+            next_state -= 1
+            state = next_state
+    sentence = [obs_map_r[i] for i in emission]
+    
+    if start_word:
+        sentence[0]=obs_map_r[start_word]
+
+    return ' '.join(sentence[::-1]).capitalize()
 
 ###############################################################################
 # HMM model
 ###############################################################################
 import numpy as np 
+import random
 
 class HiddenMarkovModel:
     '''
@@ -795,13 +858,14 @@ def obs_map_reverser(obs_map):
 def sample_sentence(hmm, obs_map, n_words=100):
     # Get reverse map.
     obs_map_r = obs_map_reverser(obs_map)
-
     # Sample and convert sentence.
     emission, states = hmm.generate_emission(n_words)
     sentence = [obs_map_r[i] for i in emission]
+    
+    if start_word:
+        sentence[0]=obs_map_r[start_word]
 
-    return ' '.join(sentence).capitalize() + '...'
-
+    return ' '.join(sentence).capitalize()+"..."
 
 ####################
 # HMM VISUALIZATION FUNCTIONS
