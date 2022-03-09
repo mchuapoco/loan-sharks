@@ -160,6 +160,106 @@ def sample_rev_sonents(hmm, obs_map, syllable_dict, n_sonnet=10, start_word=None
 
     return ' '.join(sentence[::-1]).capitalize()
 
+def count_syllables(word):
+    """
+    Taken from syllapy package: https://github.com/mholtzscher/syllapy
+    """
+    syllable_count = 0
+    vowels = 'aeiouy'
+    if word[0] in vowels:
+        syllable_count += 1
+    for index in range(1, len(word)):
+        if word[index] in vowels and word[index - 1] not in vowels:
+            syllable_count += 1
+    if word.endswith('e'):
+        syllable_count -= 1
+    if word.endswith('le') and len(word) > 2 and word[-3] not in vowels:
+        syllable_count += 1
+    if syllable_count == 0:
+        syllable_count += 1
+    return syllable_count
+
+def addSpenserData(spenser_fn, all_words_, all_sequences_, word_dict_, all_sonnet_int_, syllable_dict_):
+    """
+    Takes in spenser filename and adds spenser data to existing structures in same format. 
+    """
+    spenser_fn = "data/spenser.txt"
+    
+    # Not ideal, but prevents updating original
+    all_words_ = all_words_.copy()
+    shake_words = all_words_.copy()
+    all_sequences_ = all_sequences_.copy()
+    word_dict_ = word_dict_.copy()
+    all_sonnet_int_ = all_sonnet_int_.copy()
+    syllable_dict_ = syllable_dict_.copy()
+    start_idx = len(all_words_)
+
+    with open(spenser_fn) as f:
+        spenser = f.readlines()
+    
+    # Regular expression to catch Roman numerals
+    p = re.compile("^(?=[MDCLXVI])M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})$")
+    start_indexes = []
+    for i, line in enumerate(spenser): 
+        if p.match(line.strip()):
+            start_indexes.append(i)
+    new_words = set()
+    new_sequences = []
+    for start_ind in start_indexes: 
+        # Iterate through each line in the sonnet (starts at index +2 to not use the line that has the number)
+        for i, line in enumerate(spenser[start_ind+2: start_ind+16]): 
+
+            # Remove whitespace at start + end of line
+            clean_line = line.strip()
+
+            # Remove punctuation
+            clean_line = clean_line.replace(',', '')
+            clean_line = clean_line.replace(':', '')
+            clean_line = clean_line.replace('"', '')
+            clean_line = clean_line.replace(';', '')
+            clean_line = clean_line.replace('.', '')
+            clean_line = clean_line.replace('(', '')
+            clean_line = clean_line.replace(')', '')
+            clean_line = clean_line.replace('!', '')
+            clean_line = clean_line.replace('?', '')
+
+            # Remove capitalization
+            clean_line = clean_line.lower() 
+
+            # Create array of words
+            clean_words = clean_line.split()
+
+            # Create sequence
+            sequence = []
+            for word in clean_words: 
+                all_words_.add(word) 
+                sequence.append(word)
+                new_words.add(word)
+            sequence.append('\n')
+            all_sequences_.append(sequence)
+            new_sequences.append(sequence)
+        
+    for i, word in enumerate(new_words - shake_words):
+        word_dict_[word] = i + start_idx
+
+    # Now, convert all_sonnets into integer representation
+    for sonnet in new_sequences:
+        current_sonnet = []
+        for word in sonnet:
+            current_sonnet.append(word_dict_[word])
+        all_sonnet_int_.append(current_sonnet)
+
+    d = cmudict.dict()
+    for word in all_words_:
+        # Number of digits in NLTK (i.e. number of vowel stress marks) approximates number of syllables
+        try:
+            num_syls = len([y for y in d[word][-1] if y[-1].isdigit()])
+            syllable_dict_[word] = num_syls
+        except:
+            syllable_dict_[word] = count_syllables(word)
+            
+    return all_words_, all_sequences_, word_dict_, all_sonnet_int_, syllable_dict_
+
 ###############################################################################
 # HMM model
 ###############################################################################
