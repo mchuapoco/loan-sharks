@@ -955,7 +955,7 @@ def obs_map_reverser(obs_map):
 
     return obs_map_r
 
-def sample_sentence(hmm, obs_map, n_words=100):
+def sample_sentence(hmm, obs_map, n_words=100, start_word=None):
     # Get reverse map.
     obs_map_r = obs_map_reverser(obs_map)
     # Sample and convert sentence.
