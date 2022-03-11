@@ -183,7 +183,6 @@ def addSpenserData(spenser_fn, all_words_, all_sequences_, word_dict_, all_sonne
     """
     Takes in spenser filename and adds spenser data to existing structures in same format. 
     """
-    spenser_fn = "data/spenser.txt"
     
     # Not ideal, but prevents updating original
     all_words_ = all_words_.copy()
