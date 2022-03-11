@@ -183,7 +183,6 @@ def addSpenserData(spenser_fn, all_words_, all_sequences_, word_dict_, all_sonne
     """
     Takes in spenser filename and adds spenser data to existing structures in same format. 
     """
-    spenser_fn = "data/spenser.txt"
     
     # Not ideal, but prevents updating original
     all_words_ = all_words_.copy()
@@ -248,15 +247,16 @@ def addSpenserData(spenser_fn, all_words_, all_sequences_, word_dict_, all_sonne
         for word in sonnet:
             current_sonnet.append(word_dict_[word])
         all_sonnet_int_.append(current_sonnet)
+    from nltk.corpus import cmudict
 
     d = cmudict.dict()
     for word in all_words_:
         # Number of digits in NLTK (i.e. number of vowel stress marks) approximates number of syllables
         try:
             num_syls = len([y for y in d[word][-1] if y[-1].isdigit()])
-            syllable_dict_[word] = num_syls
+            syllable_dict_[word] = [num_syls]
         except:
-            syllable_dict_[word] = count_syllables(word)
+            syllable_dict_[word] = [count_syllables(word)]
             
     return all_words_, all_sequences_, word_dict_, all_sonnet_int_, syllable_dict_
 
@@ -976,8 +976,8 @@ def sample_sentence(hmm, obs_map, n_words=100):
     emission, states = hmm.generate_emission(n_words)
     sentence = [obs_map_r[i] for i in emission]
     
-    if start_word:
-        sentence[0]=obs_map_r[start_word]
+#     if start_word:
+#         sentence[0]=obs_map_r[start_word]
 
     return ' '.join(sentence).capitalize()+"..."
 
