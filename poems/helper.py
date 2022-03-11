@@ -261,6 +261,20 @@ def addSpenserData(spenser_fn, all_words_, all_sequences_, word_dict_, all_sonne
     return all_words_, all_sequences_, word_dict_, all_sonnet_int_, syllable_dict_
 
 ###############################################################################
+# RNN Helper Functions
+###############################################################################
+## Helper function for pretty time
+import time 
+import math
+def timeSince(since):
+    now = time.time()
+    s = now - since
+    m = math.floor(s / 60)
+    s -= m * 60
+    return '%dm %ds' % (m, s)
+
+
+###############################################################################
 # HMM model
 ###############################################################################
 import numpy as np 
